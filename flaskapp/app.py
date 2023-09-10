@@ -67,10 +67,6 @@ def calculate_similarity(model, image1_path=imgPath1, image2_path=imgPath2):
 
 
 
-
-
-
-
 app = Flask(__name__)
 
 # Set the upload folder and allowed extensions
@@ -100,13 +96,13 @@ def upload_file():
 
         img_path = 'static/uploads/captured.jpg'
 
-        dummy_prediction_value = average_pixel_value(img_path)
-        dummy_prediction_value = calculate_similarity(siamese_network, imgPath1, imgPath2)
+
+
+        smiliarity_value = calculate_similarity(siamese_network, imgPath1, imgPath2)
 
 
 
-
-        result = [str(dummy_prediction_value)]
+        result = [str(smiliarity_value)]
 
         return render_template('index.html', message='File successfully uploaded and processed', result=result, img_path=img_path)
 

@@ -82,7 +82,7 @@ body, html {
   <!-- Container (About Section) -->
   <div class="w3-content w3-container w3-padding-64" id="about">
     <h3 class="w3-center">ABOUT THE PROJECT</h3>
-    <p class="w3-center"><em>Upload your photo here</em></p>
+    <p class="w3-center"><em>Upload your photo below</em></p>
 
 
 <div class="w3-content w3-container w3-padding-64" style="padding-left: 30%;">
@@ -96,7 +96,7 @@ body, html {
     <p>As the hackathon format doesn't allow for thoughtful and methodical development of AI, we decided to use a pre-existing Computer Vision model to be able to recognize a place, instead of having to train a model for ourselves. A problem we ran into was that most Open Source Computer Vision models are intended for object detection and classification, rather than comparison between two pictures of the same object. Unable to find a suitable model, we were forced to train our own, settling on a Siamese neural network. We're especially proud of providing a proof of concept, with a self-trained Siamese neural network that works as intended. (with the pictures about the same angle)</p>
     <div class="w3-row">
       <div class="w3-col m6 w3-center w3-padding-large">
-        <p><b><i class="fa fa-user w3-margin-right"></i>University of Pennsylvania</b></p><br>
+        <p><b><i class="fa w3-margin-right"></i>University of Pennsylvania</b></p><br>
         <img src="/static/uploads/hus1.jpg" class="w3-round w3-image" alt="Photo" width="500" height="333">
         <br>
         <br>
@@ -108,27 +108,33 @@ body, html {
       
 
     {% if message %}
-    <p class="w3-center">{{ message }}</p>
+     <!--  <p class="w3-center">{{ message }}</p>--> 
     {% endif %}
 
 
     {% if result %}
-        <h2 class="w3-center">Similarity:</h2>
-        <ul >
+        <h3 class="w3-center">Similarity:</h3>
+        <br>
+        <ul>
             {% for r in result %}
-                {% if r > 0.8 %}
-                <li class="w3-center">Did you know</li>
+
+                {% if r|float >= 0.8 %}
+                
+
+                    <li class="w3-center">Try retaking your photo at a different angle.</li>
+
                 {% else %}
-                <li class="w3-center"></li>
-                {% endif %}
+                    <li class="w3-center">Did you know? In 1736, Benjamin Franklin co-founded the Union Fire Company, which was the first organized volunteer fire department in Philadelphia. The members of this company were dedicated to responding to fires and helping to protect the city from fire-related disasters.</li>
+                
+                    
+                    {% endif %}
+
             {% endfor %}
         </ul>
-        
-        
     {% endif %}
     
     {% for r in result %}
-                <li class="w3-center">{{ r }}</li>
+                <p class="w3-center" style="color:white">({{ r }})</p>
     {% endfor %}
 
 
@@ -146,7 +152,7 @@ body, html {
 
         const imageForm = document.querySelector("#imageForm");
         const imageInput = document.querySelector("#imageInput");
-        
+        /*
             // Access the device camera and stream to cameraView
         function cameraStart() {
             navigator.mediaDevices
@@ -159,6 +165,7 @@ body, html {
                 console.error("Oops. Something is broken.", error);
             });
         }
+        */
 
             // Function to convert a data URL to Blob
         function dataURLtoBlob(dataURL) {
