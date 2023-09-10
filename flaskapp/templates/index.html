@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Photo Cache</title>
+    <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    <style>
+        #container {
+            margin: 0px auto;
+            width: 500px;
+            height: 375px;
+            border: 10px #333 solid;
+        }
+        #videoElement {
+            width: 500px;
+            height: 375px;
+            background-color: #666;
+        }
+
+        body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif;}
+body, html {
+  height: 100%;
+  color: #777;
+  line-height: 1.8;
+}
+
+/* Create a Parallax Effect */
+.bgimg-1, .bgimg-2, .bgimg-3 {
+  background-attachment: fixed;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+/* First image (Logo. Full height) */
+.bgimg-1 {
+  background-image: url('/static/uploads/cachemap.jpg');
+  min-height: 100%;
+}
+
+/* Second image (Portfolio) */
+.bgimg-2 {
+  background-image: url("/static/uploads/cachemap.jpg");
+  min-height: 400px;
+}
+
+/* Third image (Contact) */
+.bgimg-3 {
+  background-image: url("/static/uploads/cachemap.jpg");
+  min-height: 400px;
+}
+
+.w3-wide {letter-spacing: 10px;}
+.w3-hover-opacity {cursor: pointer;}
+
+/* Turn off parallax scrolling for tablets and phones */
+@media only screen and (max-device-width: 1600px) {
+  .bgimg-1, .bgimg-2, .bgimg-3 {
+    background-attachment: scroll;
+    min-height: 400px;
+  }
+}
+    </style>
+
+</head>
+<body>
+
+    
+
+
+<!-- First Parallax Image with Logo Text -->
+<div class="bgimg-1 w3-display-container w3-opacity-min" id="home">
+    <div class="w3-display-middle" style="white-space:nowrap;">
+      <span class="w3-center w3-padding-large w3-black w3-xlarge w3-wide w3-animate-opacity">PHOTO <span class="w3-hide-small">CHACHE</span>
+    </div>
+  </div>
+  
+  <!-- Container (About Section) -->
+  <div class="w3-content w3-container w3-padding-64" id="about">
+    <h3 class="w3-center">ABOUT THE PROJECT</h3>
+    <p class="w3-center"><em>Upload your photo here</em></p>
+
+
+<div class="w3-content w3-container w3-padding-64" style="padding-left: 30%;">
+    <form method="POST" enctype="multipart/form-data" id="uploadForm">
+        <!-- Set the value attribute to a data URL of the default image -->
+        <input type="file" name="file" accept=".png, .jpg, .jpeg, .gif">
+        <input type="submit" value="Upload and Process" >
+    </form>
+</div>
+
+    <p>As the hackathon format doesn't allow for thoughtful and methodical development of AI, we decided to use a pre-existing Computer Vision model to be able to recognize a place, instead of having to train a model for ourselves. A problem we ran into was that most Open Source Computer Vision models are intended for object detection and classification, rather than comparison between two pictures of the same object. Unable to find a suitable model, we were forced to train our own, settling on a Siamese neural network. We're especially proud of providing a proof of concept, with a self-trained Siamese neural network that works as intended. (with the pictures about the same angle)</p>
+    <div class="w3-row">
+      <div class="w3-col m6 w3-center w3-padding-large">
+        <p><b><i class="fa fa-user w3-margin-right"></i>University of Pennsylvania</b></p><br>
+        <img src="/static/uploads/hus1.jpg" class="w3-round w3-image" alt="Photo" width="500" height="333">
+        <br>
+        <br>
+        
+        {% if img_path %}
+            <img src="/{{ img_path }}" alt="Uploaded Image" class="w3-round w3-image" width="500" height="333">
+        {% endif %}
+      </div>
+      
+
+    {% if message %}
+    <p class="w3-center">{{ message }}</p>
+    {% endif %}
+
+
+    {% if result %}
+        <h2 class="w3-center">Similarity:</h2>
+        <ul >
+            {% for r in result %}
+                {% if r > 0.8 %}
+                <li class="w3-center">Did you know</li>
+                {% else %}
+                <li class="w3-center"></li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+        
+        
+    {% endif %}
+    
+    {% for r in result %}
+                <li class="w3-center">{{ r }}</li>
+    {% endfor %}
+
+
+</main>    
+
+    <script>
+        // Set constraints for the video stream
+        var constraints = { video: { facingMode: "user" }, audio: false };// Define constants
+        const cameraView = document.querySelector("#camera--view");
+        const cameraOutput = document.querySelector("#camera--output");
+        const cameraSensor = document.querySelector("#camera--sensor");
+        const cameraTrigger = document.querySelector("#camera--trigger");
+
+        const uploadForm = document.querySelector("#uploadForm"); // Added form element
+
+        const imageForm = document.querySelector("#imageForm");
+        const imageInput = document.querySelector("#imageInput");
+        
+            // Access the device camera and stream to cameraView
+        function cameraStart() {
+            navigator.mediaDevices
+                .getUserMedia(constraints)
+                .then(function(stream) {
+                track = stream.getTracks()[0];
+                cameraView.srcObject = stream;
+            })
+            .catch(function(error) {
+                console.error("Oops. Something is broken.", error);
+            });
+        }
+
+            // Function to convert a data URL to Blob
+        function dataURLtoBlob(dataURL) {
+            const parts = dataURL.split(';base64,');
+            const contentType = parts[0].split(':')[1];
+            const raw = window.atob(parts[1]);
+            const blob = new Blob([new Uint8Array(Array.from(raw).map(char => char.charCodeAt(0)))], { type: contentType });
+            return blob;
+        }
+    
+        
+        // Start the video stream when the window loads
+        window.addEventListener("load", cameraStart, false);
+        
+                    
+        // Function to send the captured image to the backend
+        function sendImageToServer(imageData) {
+            // Create a FormData object to send the image as a file
+            formData = new FormData();
+            formData.append('file', imageData, 'captured0.jpg'); // 'captured.jpg' is the file name
+
+            // Get the form element
+            const form = document.querySelector('form');
+
+            // Disable the form inputs and submit button while sending the image
+            form.querySelectorAll('input').forEach(input => {
+                input.disabled = true;
+            });
+
+            // Send a POST request to the backend
+            fetch(form.action, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (response.ok) {
+                    console.log('Image sent successfully');
+                    // You can perform additional actions here if needed
+                } else {
+                    console.error('Failed to send image to the server');
+                }
+
+                // Re-enable the form inputs and submit button
+                form.querySelectorAll('input').forEach(input => {
+                    input.disabled = false;
+                });
+            })
+            .catch(error => {
+                console.error('Error:', error);
+
+                // Re-enable the form inputs and submit button in case of an error
+                form.querySelectorAll('input').forEach(input => {
+                    input.disabled = false;
+                });
+            });
+        }
+
+        // Take a picture when cameraTrigger is tapped
+        cameraTrigger.onclick = function() {
+            cameraSensor.width = cameraView.videoWidth;
+            cameraSensor.height = cameraView.videoHeight;
+            cameraSensor.getContext("2d").drawImage(cameraView, 0, 0);
+            const imageDataURL = cameraSensor.toDataURL("image/jpeg"); // You can change the format if needed
+            cameraOutput.src = imageDataURL;
+            cameraOutput.classList.add("taken");
+            
+
+            // Set the value of the file input to the captured image data URL
+            
+            uploadForm.querySelector('input[name="file"]').value = imageDataURL;
+            console.log(imageDataURL);
+
+            // Call the function to send the image to the server
+            sendImageToServer(dataURLtoBlob(imageDataURL)); // Convert data URL to Blob
+
+            // Simulate a click on the "Upload and Process" button
+            document.querySelector('input[type="submit"]').click();
+            //setFormInputValue();
+        };
+
+        function setFormInputValue() {
+            // Get the src attribute of the image
+            const takenImages = document.getElementByClassName('taken');
+            const imgSrc = takenImages[0].src;
+            
+            // Set the value of the input field to the imgSrc
+            document.getElementsByName('file')[0].value = imgSrc;
+            
+        }
+
+        function captureAndUpload() {
+            const imageDataURL = cameraSensor.toDataURL("image/jpeg");
+            cameraOutput.src = imageDataURL;
+            cameraOutput.classList.add("taken");
+
+            // Create a FormData object to send the image to the server
+            const formData = new FormData();
+            formData.append("image", imageDataURL);
+
+            // Send the image data to the Flask server
+            fetch("/upload", {
+                method: "POST",
+                body: formData,
+            })
+            .then(response => {
+                // Handle the server response if needed
+                console.log(response);
+            })
+            .catch(error => {
+                // Handle any errors that occurred during the fetch.
+                console.error(error);
+            });
+        }
+
+        // Attach the captureAndUpload function to a button or event of your choice
+        // For example, you can attach it to a button click event.
+        // 
+        const captureButton = document.getElementById("camera--trigger")
+        captureButton.addEventListener("click", captureAndUpload);
+
+
+        // Wait for the DOM to be ready
+        document.addEventListener("DOMContentLoaded", function () {
+            // Get references to the form and the select button
+            var form = document.getElementById("uploadForm");
+            var selectButton = document.getElementById("selectButton");
+
+            // Add an event listener to the select button
+            selectButton.addEventListener("click", function () {
+                // Get the image element with the class "taken"
+                var takenImage = document.querySelector(".taken");
+
+                // Check if an image with class "taken" exists
+                if (takenImage) {
+                    // Get the source (URL) of the image
+                    var imageUrl = takenImage.src;
+
+                    // Create a new File object with the image URL
+                    fetch(imageUrl)
+                        .then(response => response.blob())
+                        .then(blob => {
+                            var imageFile = new File([blob], "image.jpg");
+                            // Set the File object as the value of the file input
+                            var fileInput = form.querySelector("input[type='file']");
+                            fileInput.files[0] = imageFile;
+
+                            // Submit the form
+                            form.submit();
+                        });
+                } else {
+                    alert("No image with class 'taken' found.");
+                }
+            });
+        });
+
+
+    </script>
+              
+</body>
+</html>

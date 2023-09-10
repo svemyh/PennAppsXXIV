@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Image Processing Web App</title>
+
+    <style>
+        #container {
+            margin: 0px auto;
+            width: 500px;
+            height: 375px;
+            border: 10px #333 solid;
+        }
+        #videoElement {
+            width: 500px;
+            height: 375px;
+            background-color: #666;
+        }
+    </style>
+
+</head>
+<body>
+    <h1>Image Processing Web App</h1>
+    <form method="POST" enctype="multipart/form-data">
+        <!-- Set the value attribute to a data URL of the default image -->
+        <input type="file" name="file" accept=".png, .jpg, .jpeg, .gif" value="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/4QA...">
+        <input type="submit" value="Upload and Process">
+    </form>
+    
+    {% if message %}
+        <p>{{ message }}</p>
+    {% endif %}
+    {% if result %}
+        <h2>Results:</h2>
+        <ul>
+            {% for r in result %}
+                <li>{{ r }}</li>
+            {% endfor %}
+        </ul>
+        <h3>Uploaded Image:</h3>
+        
+    {% endif %}
+    {% if img_path %}
+        <img src="/{{ img_path }}" alt="Uploaded Image">
+    {% endif %}
+
+
+
+<!-- Camera -->
+
+<main id="camera">
+        
+<!-- Camera sensor -->
+<canvas id="camera--sensor"></canvas>
+
+<!-- Camera view -->
+<video id="camera--view" autoplay playsinline></video>
+
+<!-- Camera output -->
+<img src="//:0" alt="" id="camera--output">
+
+<!-- Camera trigger -->
+<button id="camera--trigger">Take a picture</button>    
+
+</main>    
+
+
+
+
+    <script>
+        // Set constraints for the video stream
+        var constraints = { video: { facingMode: "user" }, audio: false };// Define constants
+        const cameraView = document.querySelector("#camera--view"),
+            cameraOutput = document.querySelector("#camera--output"),
+            cameraSensor = document.querySelector("#camera--sensor"),
+            cameraTrigger = document.querySelector("#camera--trigger"),
+            uploadForm = document.querySelector("#uploadForm"); // Added form element
+        
+            // Access the device camera and stream to cameraView
+        function cameraStart() {
+            navigator.mediaDevices
+                .getUserMedia(constraints)
+                .then(function(stream) {
+                track = stream.getTracks()[0];
+                cameraView.srcObject = stream;
+            })
+            .catch(function(error) {
+                console.error("Oops. Something is broken.", error);
+            });
+        }
+        
+        
+        
+        // Start the video stream when the window loads
+        window.addEventListener("load", cameraStart, false);
+        
+                    
+        // Function to send the captured image to the backend
+        function sendImageToServer(imageData) {
+            // Create a FormData object to send the image as a file
+            const formData = new FormData();
+            formData.append('file', imageData, 'captured.jpg'); // 'captured.jpg' is the file name
+
+            // Get the form element
+            const form = document.querySelector('form');
+
+            // Disable the form inputs and submit button while sending the image
+            form.querySelectorAll('input').forEach(input => {
+                input.disabled = true;
+            });
+
+            // Send a POST request to the backend
+            fetch(form.action, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (response.ok) {
+                    console.log('Image sent successfully');
+                    // You can perform additional actions here if needed
+                } else {
+                    console.error('Failed to send image to the server');
+                }
+
+                // Re-enable the form inputs and submit button
+                form.querySelectorAll('input').forEach(input => {
+                    input.disabled = false;
+                });
+            })
+            .catch(error => {
+                console.error('Error:', error);
+
+                // Re-enable the form inputs and submit button in case of an error
+                form.querySelectorAll('input').forEach(input => {
+                    input.disabled = false;
+                });
+            });
+        }
+
+    
+        
+        // Take a picture when cameraTrigger is tapped
+        cameraTrigger.onclick = function() {
+            cameraSensor.width = cameraView.videoWidth;
+            cameraSensor.height = cameraView.videoHeight;
+            cameraSensor.getContext("2d").drawImage(cameraView, 0, 0);
+            const imageDataURL = cameraSensor.toDataURL("image/jpeg"); // You can change the format if needed
+            cameraOutput.src = imageDataURL;
+            cameraOutput.classList.add("taken");
+            
+            // Set the value of the file input to the captured image data URL
+            uploadForm.querySelector('input[name="file"]').value = imageDataURL;
+
+            
+            // Set the value of the file input to the captured image data URL
+            uploadForm.querySelector('input[name="file"]').value = imageDataURL;
+
+            // Call the function to send the image to the server
+            sendImageToServer(dataURLtoBlob(imageDataURL)); // Convert data URL to Blob
+
+            // Simulate a click on the "Upload and Process" button
+            document.querySelector('input[type="submit"]').click();
+        };
+        
+
+        // Function to convert a data URL to Blob
+        function dataURLtoBlob(dataURL) {
+            const parts = dataURL.split(';base64,');
+            const contentType = parts[0].split(':')[1];
+            const raw = window.atob(parts[1]);
+            const blob = new Blob([new Uint8Array(Array.from(raw).map(char => char.charCodeAt(0)))], { type: contentType });
+            return blob;
+        }
+        </script>
+            
+</body>
+</html>
