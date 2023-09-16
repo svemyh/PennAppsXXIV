@@ -14,11 +14,11 @@ This is a web application called "Photo Cache" that allows users to upload a pho
 
 # Technologies Used
 
-    Flask: This web application is built using the Flask framework.
-    HTML/CSS: The user interface of the web application is created using HTML and styled with CSS.
-    Siamese Neural Network: The application itself uses a pre-trained Siamese neural network to calculate image similarity.
-    Keras & tensorflow: Used for deep learning tasks, including loading and running the Siamese network.
-    Cloud ready: By packaging the project in conatiners using Docker the application is ready to deploy to a external webserver.
+Flask: This web application is built using the Flask framework.
+HTML/CSS: The user interface of the web application is created using HTML and styled with CSS.
+Siamese Neural Network: The application itself uses a pre-trained Siamese neural network to calculate image similarity.
+Keras & tensorflow: Used for deep learning tasks, including loading and running the Siamese network.
+Cloud ready: By packaging the project in conatiners using Docker the application is ready to deploy to a external webserver.
 
 # Example
-![A location at the University of Pennsylvania](static/uploads/explanation.png)
+![explanation](https://github.com/svemyh/PennAppsXXIV/assets/40596752/164a0156-59ca-4e1d-a4fe-2e1a1d063cac)
